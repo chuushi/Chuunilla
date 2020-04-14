@@ -3,4 +3,7 @@ instant-item-pickup-radius: 2.0
 disable-thunder-fire: true
 crop-auto-plant: true
 beacon-mob-grief-protection: true
-wandering-trader-rare-trade: true
+wandering-trader:
+  rare-trade: true
+  heads:
+    - 39d83509-f85f-492a-ba8d-f54ad74c2682

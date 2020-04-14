@@ -3,3 +3,9 @@ name: Chuunilla
 author: Simon Chuu
 api-version: 1.15
 version: 1.0.0-SNAPSHOT
+
+commands:
+  chuunilla:
+    description: Chuunilla main command
+    permission: chuunilla.command
+    usage: /chuunilla <status|wanderinghead <list|add|remove>>
