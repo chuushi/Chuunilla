@@ -19,13 +19,17 @@ import java.util.*;
 
 public class WanderingTraderMod implements Listener {
     private final Chuunilla plugin;
+    private final MerchantRecipe bush;
     private final MerchantRecipe totem;
     private final MerchantRecipe hots;
     private final MerchantRecipe elytra;
     private final MerchantRecipe beacon;
+    private final MerchantRecipe trident;
 
     public WanderingTraderMod() {
         this.plugin = Chuunilla.getInstance();
+        this.bush = new MerchantRecipe(new ItemStack(Material.DEAD_BUSH, 2), 2);
+        this.bush.addIngredient(new ItemStack(Material.EMERALD, 3));
         this.totem = new MerchantRecipe(new ItemStack(Material.TOTEM_OF_UNDYING, 1), 1);
         this.totem.addIngredient(new ItemStack(Material.EMERALD, 57));
         this.hots = new MerchantRecipe(new ItemStack(Material.HEART_OF_THE_SEA, 1), 1);
@@ -37,6 +41,8 @@ public class WanderingTraderMod implements Listener {
         this.beacon = new MerchantRecipe(new ItemStack(Material.BEACON, 1), 1);
         this.beacon.addIngredient(new ItemStack(Material.EMERALD, 52));
         this.beacon.addIngredient(new ItemStack(Material.GLASS, 1));
+        this.trident = new MerchantRecipe(new ItemStack(Material.TRIDENT, 1), 1);
+        this.trident.addIngredient(new ItemStack(Material.EMERALD, 62));
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -45,13 +51,15 @@ public class WanderingTraderMod implements Listener {
             return;
 
         WanderingTrader trader = (WanderingTrader) ev.getEntity();
-        int rng = new Random().nextInt(7);
+        int rng = new Random().nextInt(10);
         List<MerchantRecipe> trades = new ArrayList<>(trader.getRecipes());
 
-        if (rng == 0) trades.add(totem);
+        if (rng == 0) trades.add(trident);
         else if (rng == 1) trades.add(hots);
         else if (rng == 2) trades.add(elytra);
         else if (rng == 3) trades.add(beacon);
+        else if (rng <= 5) trades.add(bush);
+        else if (rng <= 7) trades.add(totem);
         else {
             trades.add(head(randomPlayer(null)));
         }
