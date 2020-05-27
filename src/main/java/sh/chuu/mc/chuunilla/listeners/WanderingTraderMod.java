@@ -18,7 +18,6 @@ import sh.chuu.mc.chuunilla.Chuunilla;
 import java.util.*;
 
 public class WanderingTraderMod implements Listener {
-    private final Chuunilla plugin;
     private final MerchantRecipe bush;
     private final MerchantRecipe totem;
     private final MerchantRecipe hots;
@@ -27,7 +26,6 @@ public class WanderingTraderMod implements Listener {
     private final MerchantRecipe trident;
 
     public WanderingTraderMod() {
-        this.plugin = Chuunilla.getInstance();
         this.bush = new MerchantRecipe(new ItemStack(Material.DEAD_BUSH, 10), 2);
         this.bush.addIngredient(new ItemStack(Material.EMERALD, 3));
         this.totem = new MerchantRecipe(new ItemStack(Material.TOTEM_OF_UNDYING, 1), 1);

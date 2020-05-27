@@ -52,24 +52,6 @@ public class Chuunilla extends JavaPlugin {
             );
             return true;
         }
-        if (args[0].equalsIgnoreCase("wanderinghead")) {
-            if (args.length == 1) {
-                sender.sendMessage("missing: <list|add|remove>");
-                return true;
-            }
-            List<String> ids = getConfig().getStringList("wandering-trader.heads");
-            if (args[1].equalsIgnoreCase("list")) {
-                // TODO
-            }
-            if (args[1].equalsIgnoreCase("remove")) {
-                // TODO
-            }
-            if (args[1].equalsIgnoreCase("add")) {
-                // TODO
-            }
-            sender.sendMessage("Head list config mod not yet implemented");
-            return true;
-        }
         return true;
     }
 }
