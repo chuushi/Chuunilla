@@ -34,7 +34,7 @@ public class WanderingTraderMod implements Listener {
         this.totem.addIngredient(new ItemStack(Material.EMERALD, 57));
         this.hots = new MerchantRecipe(new ItemStack(Material.HEART_OF_THE_SEA, 1), 1);
         this.hots.addIngredient(new ItemStack(Material.EMERALD_BLOCK, 12));
-        this.hots.addIngredient(new ItemStack(Material.NAUTILUS_SHELL, 12));
+        this.hots.addIngredient(new ItemStack(Material.NAUTILUS_SHELL, 5));
         this.elytra = new MerchantRecipe(new ItemStack(Material.ELYTRA, 1), 1);
         this.elytra.addIngredient(new ItemStack(Material.EMERALD_BLOCK, 12));
         this.elytra.addIngredient(new ItemStack(Material.PHANTOM_MEMBRANE, 42));
