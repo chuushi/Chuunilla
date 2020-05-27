@@ -5,7 +5,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockDropItemEvent;
-import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.util.Vector;
 
 public class InstantPickup implements Listener {
@@ -28,7 +27,7 @@ public class InstantPickup implements Listener {
 
         for (Item i : ev.getItems()) {
             i.setPickupDelay(0);
-            i.setVelocity(new Vector());
+            i.setVelocity(new Vector(0.0, 0.2, 0.0));
             i.teleport(p);
         }
     }
