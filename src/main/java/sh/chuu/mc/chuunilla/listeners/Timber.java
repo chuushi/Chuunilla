@@ -1,7 +1,6 @@
 package sh.chuu.mc.chuunilla.listeners;
 
 import org.bukkit.Axis;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -14,7 +13,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
 import sh.chuu.mc.chuunilla.Chuunilla;
 
 import java.util.ArrayList;
@@ -26,6 +24,9 @@ public class Timber implements Listener {
     private static final String PERMISSION_NODE = "chuunilla.timber";
     private enum Specie {
         OAK, SPRUCE, BIRCH, JUNGLE, DARK_OAK, ACACIA
+    }
+    private enum CheckResult {
+        LOG, NO_LEAVES, NONE
     }
 
     private final Chuunilla plugin = Chuunilla.getInstance();
@@ -57,7 +58,7 @@ public class Timber implements Listener {
         p.sendMessage("Timber Activated");
         List<Block> blocks = new ArrayList<>();
 
-        if (populateLogList(blocks, getSpecie(b.getType()), b, BlockFace.SELF)) {
+        if (populateLogList(blocks, 0, getSpecie(b.getType()), b, BlockFace.SELF)) {
             p.sendMessage("Timber Passed");
             unstripLog(b);
 
@@ -80,8 +81,26 @@ public class Timber implements Listener {
     2. if not log, check blocks surrounding up
     3. check blocks surrounding itself
      */
-    // This is so broken
-    private boolean populateLogList(List<Block> list, Specie specie, Block block, BlockFace face) {
+    // TODO This is so broken
+    /**
+     Psuedobode: (itself is a log)
+     1. traverse up and check
+     2. if up is not same specie, check surrounding of up
+     3.   if nothing surrounds it, exit.
+     4. if log, check surrounding then recursive call to up
+     5. else if leaves, check surrounding then
+     6. else just return false because idk wtf happened
+     3. check blocks surrounding itself
+     * @param list List of blocks
+     * @param side How many blocks search went sideways
+     * @param specie Specie
+     * @param block Block to center the search around
+     * @param face Direction of block to check
+     * @return true if at least one branch was detected
+     */
+    private boolean populateLogList(List<Block> list, int side, Specie specie, Block block, BlockFace face) {
+        if (side >= 5) return false;
+
         Block bl = block.getRelative(face);
         list.add(bl);
 
@@ -92,37 +111,44 @@ public class Timber implements Listener {
         Block up = bl.getRelative(BlockFace.UP);
 
         if (specie != getSpecie(up.getType())) {
-            if (checkSurrounding(list, specie, up, BlockFace.UP))
-                return checkSurrounding(list, specie, bl, face);
-            return false;
+            return checkSurrounding(list, side + 1, specie, bl, face) == CheckResult.LOG
+                    || checkSurrounding(list, 0, specie, up, BlockFace.UP) == CheckResult.LOG;
         }
 
         if (isLog(up)) {
-            if (!list.contains(up)) {
-                checkSurrounding(list, specie, bl, face);
-                return populateLogList(list, specie, bl, BlockFace.UP);
-            } else {
+            if (list.contains(up))
                 return true;
-            }
-        } else if (isNaturalLeaves(up)) {
-            checkSurrounding(list, specie, up, BlockFace.UP);
-            checkSurrounding(list, specie, bl, face);
-            return true;
-        } else {
-            return false;
+
+            return checkSurrounding(list, side+ + 1, specie, bl, face) != CheckResult.NO_LEAVES && populateLogList(list, 0, specie, bl, BlockFace.UP);
         }
+
+        if (isNaturalLeaves(up)) {
+            return checkSurrounding(list, side + 1, specie, bl, face) != CheckResult.NO_LEAVES
+                    || checkSurrounding(list, 0, specie, up, BlockFace.UP) != CheckResult.NO_LEAVES;
+        }
+
+        return false;
     }
 
-    private boolean checkSurrounding(List<Block> list, Specie specie, Block bl, BlockFace face) {
-        boolean ret = false;
+    /**
+     *
+     * @param list List of blocks
+     * @param side how many blocks search went sideways
+     * @param specie Specie
+     * @param bl Block to center the search around
+     * @param face Direction of block relative to previous block
+     * @return true if at least one branch was detected, false if no branch was detected, null if branch ends without leaves
+     */
+    private CheckResult checkSurrounding(List<Block> list, int side, Specie specie, Block bl, BlockFace face) {
+        CheckResult ret = CheckResult.NONE;
         for (BlockFace f : adjacent) {
             if (facePass(face, f)) continue;
 
             Block b = bl.getRelative(f);
-            if (specie == getSpecie(b.getType()) && !list.contains(b) && isLog(bl)) {
-                if (!populateLogList(list, specie, bl, f))
-                    return false;
-                ret = true;
+            if (specie == getSpecie(b.getType()) && isLog(b) && !list.contains(b)) {
+                if (!populateLogList(list, side, specie, bl, f))
+                    return CheckResult.NO_LEAVES;
+                ret = CheckResult.LOG;
             }
         }
         return ret;
