@@ -19,8 +19,8 @@ public class Chuunilla extends JavaPlugin {
         Chuunilla.instance = this;
         saveDefaultConfig();
 
-        double radius = getConfig().getDouble("instant-item-pickup-radius", 0);
-        if (radius > 0)
+        double radius = getConfig().getDouble("instant-item-pickup-radius", 0.0);
+        if (radius > 0.0)
             getServer().getPluginManager().registerEvents(new InstantPickup(radius), this);
 
         if (getConfig().getBoolean("disable-thunder-fire", false))
@@ -32,8 +32,11 @@ public class Chuunilla extends JavaPlugin {
         if (getConfig().getBoolean("beacon-mob-grief-protection", false))
             getServer().getPluginManager().registerEvents(new BeaconNoGrief(), this);
 
-        if (getConfig().getBoolean("wandering-trader.rare-trade", false))
+        if (getConfig().getBoolean("wandering-trader-rare-trade", false))
             getServer().getPluginManager().registerEvents(new WanderingTraderMod(), this);
+
+        if (getConfig().getBoolean("timber-tree", false))
+            getServer().getPluginManager().registerEvents(new Timber(), this);
     }
 
     @Override
@@ -43,15 +46,13 @@ public class Chuunilla extends JavaPlugin {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (args.length == 0 || args[0].equalsIgnoreCase("status")) {
-            sender.sendMessage("Modules: disable-thunder-fire: " +
-                    getConfig().getBoolean("disable-thunder-fire", false) + ", crop-auto-plant:" +
-                    getConfig().getBoolean("crop-auto-plant", false) + ", beacon-mob-grief-protection:" +
-                    getConfig().getBoolean("beacon-mob-grief-protection", false) + "; wandering-trader.rare-trade:" +
-                    getConfig().getBoolean("wandering-trader.rare-trade", false)
-            );
-            return true;
-        }
+        sender.sendMessage("Modules: disable-thunder-fire: " +
+                getConfig().getBoolean("disable-thunder-fire", false) + ", crop-auto-plant:" +
+                getConfig().getBoolean("crop-auto-plant", false) + ", beacon-mob-grief-protection:" +
+                getConfig().getBoolean("beacon-mob-grief-protection", false) + "; wandering-trader-rare-trade:" +
+                getConfig().getBoolean("wandering-trader-rare-trade", false) + "; timber-tree:" +
+                getConfig().getBoolean("timber-tree", false)
+        );
         return true;
     }
 }

@@ -8,4 +8,18 @@ commands:
   chuunilla:
     description: Chuunilla main command
     permission: chuunilla.command
-    usage: /chuunilla <status|wanderinghead <list|add|remove>>
+    usage: /chuunilla <status>
+  autocroptoggle:
+    description: Toggles auto crop for login session
+    permission: chuunilla.autocrop
+    usage: /autocroptoggle
+  timbertoggle:
+    description: Toggles timber for login session
+    permission: chuunilla.timber
+    usage: /timbertoggle
+
+permissions:
+  chuunilla.timber:
+    default: false
+  chuunilla.autocrop:
+    default: false

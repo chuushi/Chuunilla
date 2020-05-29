@@ -14,12 +14,14 @@ import org.bukkit.inventory.PlayerInventory;
 import sh.chuu.mc.chuunilla.Chuunilla;
 
 public class CropAutoPlant implements Listener {
+    private static final String PERMISSION_NODE = "chuunilla.autocrop";
+
     @EventHandler(ignoreCancelled = true)
     public void harvestEvent(BlockBreakEvent ev) {
         Player p = ev.getPlayer();
 
         // TODO Check if player has permission and disabled the feature
-        if (p.isSneaking())
+        if (!p.hasPermission(PERMISSION_NODE) || p.isSneaking())
             return;
 
         Block b = ev.getBlock();
