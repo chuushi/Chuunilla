@@ -1,17 +1,23 @@
 package sh.chuu.mc.chuunilla.listeners;
 
-import org.bukkit.Axis;
-import org.bukkit.Material;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Orientable;
 import org.bukkit.block.data.type.Leaves;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.Damageable;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import sh.chuu.mc.chuunilla.Chuunilla;
 
@@ -20,9 +26,6 @@ import java.util.*;
 // Usage: Strip log first, then break the stripped log to active timber
 public class Timber implements Listener {
     private static final String PERMISSION_NODE = "chuunilla.timber";
-
-    private final Chuunilla plugin = Chuunilla.getInstance();
-
     private static final BlockFace[] adjacent = {
             BlockFace.SOUTH,
             BlockFace.WEST,
@@ -33,37 +36,85 @@ public class Timber implements Listener {
             BlockFace.NORTH_EAST,
             BlockFace.SOUTH_EAST
     };
+    private final TextComponent actionBarTextStart = new TextComponent("Timber activated");
+    private final TextComponent actionBarTextEnd = new TextComponent("Timber finished");
+
+    private final Chuunilla plugin = Chuunilla.getInstance();
+    private final Set<Player> timbering = new HashSet<>();
 
     @EventHandler
-    private void onBlockBreak(BlockBreakEvent e) {
-        Player p = e.getPlayer();
-        if (!p.hasPermission(PERMISSION_NODE) || p.isSneaking()) return;
-        Block b = e.getBlock();
-        if (!isInitialLog(b)) return;
+    private void onBlockBreak(BlockBreakEvent ev) {
+        Player p = ev.getPlayer();
 
-        p.sendMessage("Timber Listen");
-        ItemStack axe = e.getPlayer().getInventory().getItemInMainHand();
-        long interval = axeTicks(axe.getType());
+        if (!p.hasPermission(PERMISSION_NODE) || p.isSneaking() || timbering.contains(p)) return;
+        Block bl = ev.getBlock();
+        if (!isInitialLog(bl)) return;
+
+        ItemStack axe = ev.getPlayer().getInventory().getItemInMainHand();
+        int multiplier = axeMultiplier(axe.getType());
+        if (multiplier == -1 || p.getPotionEffect(PotionEffectType.SLOW_DIGGING) != null)
+            return;
+        PotionEffect haste = p.getPotionEffect(PotionEffectType.FAST_DIGGING);
+        long interval = multiplierToTicks(multiplier, axe.getEnchantmentLevel(Enchantment.DIG_SPEED), haste != null ? haste.getAmplifier() : 0);
         if (interval == -1)
             return;
 
-        p.sendMessage("Timber Activated");
-        TreeCheck c = new TreeCheck(b);
-
+        TreeCheck c = new TreeCheck(bl);
         if (c.prepareLogs()) {
-            p.sendMessage("Timber Passed");
+            timbering.add(p);
+            p.spigot().sendMessage(ChatMessageType.ACTION_BAR, actionBarTextStart);
             c.unstrip();
             Iterator<Block> it = c.logs.iterator();
 
-            new BukkitRunnable() {
+            if (interval == 0) {
+                while (it.hasNext()) {
+                    Block b = it.next();
+                    if (!breakLog(p, b, axe))
+                        break;
+                }
+                timbering.remove(p);
+                p.spigot().sendMessage(ChatMessageType.ACTION_BAR, actionBarTextEnd);
+            } else new BukkitRunnable() {
                 @Override
                 public void run() {
-                    if (it.hasNext()) it.next().breakNaturally(axe);
-                    else this.cancel();
+                    if (!it.hasNext()) {
+                        this.cancel();
+                        return;
+                    }
+                    Block b = it.next();
+                    if (!breakLog(p, b, axe))
+                        this.cancel();
+                }
+
+                @Override
+                public synchronized void cancel() throws IllegalStateException {
+                    super.cancel();
+                    timbering.remove(p);
+                    p.spigot().sendMessage(ChatMessageType.ACTION_BAR, actionBarTextEnd);
                 }
             }.runTaskTimer(plugin, 0L, interval);
         }
-        p.sendMessage("Timber Blocks: " + c.logs.size());
+    }
+
+    private boolean breakLog(Player p, Block b, ItemStack axe) {
+        BlockBreakEvent nev = new BlockBreakEvent(b, p);
+        Bukkit.getPluginManager().callEvent(nev);
+        if (nev.isCancelled()) {
+            return false;
+        }
+
+        Damageable d = ((Damageable) axe.getItemMeta());
+        //noinspection ConstantConditions Axes are damageable.
+        int durability = d.getDamage() + 1;
+        if (durability >= axe.getType().getMaxDurability())
+            return false;
+        d.setDamage(durability);
+
+        b.breakNaturally(axe);
+        axe.setItemMeta((ItemMeta) d);
+        b.getWorld().playEffect(b.getLocation(), Effect.STEP_SOUND, b.getType());
+        b.getWorld().spawnParticle(Particle.BLOCK_CRACK, b.getLocation(), 8, b.getBlockData());
+        return true;
     }
 
 
@@ -76,21 +127,44 @@ public class Timber implements Listener {
         return !((fx == 0 && fz == 0) || (fx != 0 && fx == x) || (fz != 0 && fz == z));
     }
 
-    private int axeTicks(Material m) {
-        switch (m) {
+    private int axeMultiplier(Material axe) {
+        switch (axe) {
             case WOODEN_AXE:
-                return 10;
+                return 2;
             case STONE_AXE:
-                return 5;
+                return 4;
             case IRON_AXE:
-                return 2;
+                return 6;
             case GOLDEN_AXE:
-                return 2;
+                return 12;
             case DIAMOND_AXE:
-                return 1;
+                return 8;
             default:
                 return -1;
         }
+    }
+
+    private int multiplierToTicks(int base, int eff, int haste) {
+        int m = base;
+        if (eff != 0)
+            m += eff * eff + 1;
+        if (haste != 0)
+            m *= (5 + haste) / 5;
+
+        if (m >= 30)
+            return 0;
+        if (m >= 20)
+            return 1;
+        if (m >= 15)
+            return 2;
+        if (m >= 13)
+            return 3;
+        if (m >= 10)
+            return 4;
+        if (m >= 4)
+            return 14 - m;
+        else
+            return -1;
     }
 
     private boolean isInitialLog(Block b) {
