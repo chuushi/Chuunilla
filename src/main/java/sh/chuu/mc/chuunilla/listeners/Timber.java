@@ -140,10 +140,14 @@ public class Timber implements Listener {
 
             queue.put(initial, new LogQueueParams(BlockFace.SELF, 0, true));
             while (!queue.isEmpty()) {
+                Block last = null;
                 for (Map.Entry<Block, LogQueueParams> e : queue.entrySet()) {
                     LogQueueParams c = e.getValue();
                     checkSurrounding(gather, e.getKey(), c.face, c.side, c.isLog);
+                    last = e.getKey();
                 }
+                if (gather.isEmpty() && !checkLeaves(last)) // if tip of the tree is not leaves
+                    return false;
                 queue.clear();
                 queue = gather;
                 gather = queue == queue1 ? queue2 : queue1;
@@ -152,8 +156,9 @@ public class Timber implements Listener {
             return true;
         }
 
-        private boolean checkSurrounding(Map<Block, LogQueueParams> queue, Block bl, BlockFace face, int side, boolean isLog) {
-            if (side > 5) return false;
+        private void checkSurrounding(Map<Block, LogQueueParams> queue, Block bl, BlockFace face, int side, boolean isLog) {
+            if (side > 5) return;
+
             int newSide = side + 1;
             Map<Block, BlockFace> toCheck = new LinkedHashMap<>();
 
@@ -173,7 +178,6 @@ public class Timber implements Listener {
             // Upwards
             for (Map.Entry<Block, BlockFace> e : toCheck.entrySet()) {
                 Block up = e.getKey().getRelative(BlockFace.UP);
-                //System.out.printf("y: %d\n", up.getY());
 
                 if (isLog(up)) {
                     if (addBlock(up))
@@ -182,11 +186,7 @@ public class Timber implements Listener {
                 }
 
                 queue.put(up, new LogQueueParams(BlockFace.SELF, side, false));
-
-//                if (!checkLeaves(up))
-//                    return false;
             }
-            return true;
         }
 
 
