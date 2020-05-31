@@ -55,7 +55,7 @@ public class Timber implements Listener {
         if (multiplier == -1 || p.getPotionEffect(PotionEffectType.SLOW_DIGGING) != null)
             return;
         PotionEffect haste = p.getPotionEffect(PotionEffectType.FAST_DIGGING);
-        long interval = multiplierToTicks(multiplier, axe.getEnchantmentLevel(Enchantment.DIG_SPEED), haste != null ? haste.getAmplifier() : 0);
+        long interval = multiplierToTicks(multiplier, axe.getEnchantmentLevel(Enchantment.DIG_SPEED), haste != null ? haste.getAmplifier() + 1 : 0);
         if (interval == -1)
             return;
 
@@ -69,7 +69,7 @@ public class Timber implements Listener {
             if (interval == 0) {
                 while (it.hasNext()) {
                     Block b = it.next();
-                    if (!breakLog(p, b, axe))
+                    if (breakLogFailed(p, b, axe))
                         break;
                 }
                 timbering.remove(p);
@@ -82,7 +82,7 @@ public class Timber implements Listener {
                         return;
                     }
                     Block b = it.next();
-                    if (!breakLog(p, b, axe))
+                    if (breakLogFailed(p, b, axe))
                         this.cancel();
                 }
 
@@ -96,25 +96,25 @@ public class Timber implements Listener {
         }
     }
 
-    private boolean breakLog(Player p, Block b, ItemStack axe) {
+    private boolean breakLogFailed(Player p, Block b, ItemStack axe) {
         BlockBreakEvent nev = new BlockBreakEvent(b, p);
         Bukkit.getPluginManager().callEvent(nev);
         if (nev.isCancelled()) {
-            return false;
+            return true;
         }
 
         Damageable d = ((Damageable) axe.getItemMeta());
         //noinspection ConstantConditions Axes are damageable.
         int durability = d.getDamage() + 1;
         if (durability >= axe.getType().getMaxDurability())
-            return false;
+            return true;
         d.setDamage(durability);
 
         b.breakNaturally(axe);
         axe.setItemMeta((ItemMeta) d);
         b.getWorld().playEffect(b.getLocation(), Effect.STEP_SOUND, b.getType());
         b.getWorld().spawnParticle(Particle.BLOCK_CRACK, b.getLocation(), 8, b.getBlockData());
-        return true;
+        return false;
     }
 
 
@@ -149,15 +149,16 @@ public class Timber implements Listener {
         if (eff != 0)
             m += eff * eff + 1;
         if (haste != 0)
-            m *= (5 + haste) / 5;
+            m = m * (5 + haste) / 5;
+        System.out.printf("%d\n", m);
 
-        if (m >= 30)
+        if (m >= 35)
             return 0;
-        if (m >= 20)
+        if (m >= 25)
             return 1;
-        if (m >= 15)
+        if (m >= 20)
             return 2;
-        if (m >= 13)
+        if (m >= 15)
             return 3;
         if (m >= 10)
             return 4;
@@ -214,12 +215,11 @@ public class Timber implements Listener {
             queue.clear();
             gather.clear();
 
-            queue.put(initial, new LogQueueParams(BlockFace.SELF, 0, true));
+            queue.put(initial, new LogQueueParams(BlockFace.SELF, 0, true, true));
             while (!queue.isEmpty()) {
                 for (Map.Entry<Block, LogQueueParams> e : queue.entrySet()) {
                     LogQueueParams c = e.getValue();
-                    //System.out.printf("%s %d %d %d %s %d\n", lp.isLog, lb.getX(), lb.getY(), lb.getZ(), lp.face, lp.side);
-                    if (!checkSurrounding(gather, e.getKey(), c.face, c.side, c.isLog))
+                    if (!checkSurrounding(gather, e.getKey(), c.face, c.side, c.isLog, c.notEndOfBranch))
                         return false;
                 }
                 queue.clear();
@@ -231,7 +231,7 @@ public class Timber implements Listener {
             return true;
         }
 
-        private boolean checkSurrounding(Map<Block, LogQueueParams> queue, Block bl, BlockFace face, int side, boolean isLog) {
+        private boolean checkSurrounding(Map<Block, LogQueueParams> queue, Block bl, BlockFace face, int side, boolean isLog, boolean notEndOFBranch) {
             if (side > 5)
                 return false;
 
@@ -246,7 +246,7 @@ public class Timber implements Listener {
                 if (isLog(b)) {
                     hasLog = true;
                     if (addBlock(b)) {
-                        queue.put(b, new LogQueueParams(f, newSide, true));
+                        queue.put(b, new LogQueueParams(f, newSide, true, true));
                     }
                 }
             }
@@ -257,16 +257,16 @@ public class Timber implements Listener {
 
                 if (isLog(up)) {
                     if (addBlock(up)) {
-                        queue.put(up, new LogQueueParams(face, side, true));
+                        queue.put(up, new LogQueueParams(face, side, true, hasLog));
                     }
                     return true;
                 }
 
-                queue.put(up, new LogQueueParams(BlockFace.SELF, side, false));
+                queue.put(up, new LogQueueParams(BlockFace.SELF, side, false, hasLog));
                 return true;
             } else {
                 // this is leaves or any other block.  Empty queue means no log were put in list.
-                return hasLog || checkLeaves(bl);
+                return notEndOFBranch || hasLog || checkLeaves(bl);
             }
         }
 
@@ -322,11 +322,13 @@ public class Timber implements Listener {
         private final BlockFace face;
         private final int side;
         private final boolean isLog;
+        private final boolean notEndOfBranch;
 
-        private LogQueueParams(BlockFace face, int side, boolean isLog) {
+        private LogQueueParams(BlockFace face, int side, boolean isLog, boolean notEndOfBranch) {
             this.face = face;
             this.side = side;
             this.isLog = isLog;
+            this.notEndOfBranch = notEndOfBranch;
         }
     }
 }
