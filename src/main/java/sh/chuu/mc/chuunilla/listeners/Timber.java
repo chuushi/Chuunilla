@@ -65,6 +65,7 @@ public class Timber implements Listener {
             p.spigot().sendMessage(ChatMessageType.ACTION_BAR, actionBarTextStart);
             c.unstrip();
             Iterator<Block> it = c.logs.iterator();
+            it.next(); // skip first block
 
             if (interval == 0) {
                 while (it.hasNext()) {
@@ -92,7 +93,7 @@ public class Timber implements Listener {
                     timbering.remove(p);
                     p.spigot().sendMessage(ChatMessageType.ACTION_BAR, actionBarTextEnd);
                 }
-            }.runTaskTimer(plugin, 0L, interval);
+            }.runTaskTimer(plugin, interval, interval);
         }
     }
 
@@ -112,8 +113,11 @@ public class Timber implements Listener {
 
         b.breakNaturally(axe);
         axe.setItemMeta((ItemMeta) d);
-        b.getWorld().playEffect(b.getLocation(), Effect.STEP_SOUND, b.getType());
-        b.getWorld().spawnParticle(Particle.BLOCK_CRACK, b.getLocation(), 8, b.getBlockData());
+
+        World w = b.getWorld();
+        w.playSound(b.getLocation(), Sound.BLOCK_WOOD_BREAK, SoundCategory.BLOCKS, 1.0f, 0.8f);
+        // TODO figure out particles
+        //w.spawnParticle(Particle.BLOCK_DUST, b.getLocation(), 10, b.getBlockData());
         return false;
     }
 
@@ -150,7 +154,6 @@ public class Timber implements Listener {
             m += eff * eff + 1;
         if (haste != 0)
             m = m * (5 + haste) / 5;
-        System.out.printf("%d\n", m);
 
         if (m >= 35)
             return 0;
