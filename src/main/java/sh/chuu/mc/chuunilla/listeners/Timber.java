@@ -137,18 +137,19 @@ public class Timber implements Listener {
         private boolean prepareLogs() {
             Map<Block, LogQueueParams> queue = queue1;
             Map<Block, LogQueueParams> gather = queue2;
+            queue.clear();
+            gather.clear();
 
             queue.put(initial, new LogQueueParams(BlockFace.SELF, 0, true));
             while (!queue.isEmpty()) {
-                Block last = null;
                 for (Map.Entry<Block, LogQueueParams> e : queue.entrySet()) {
                     LogQueueParams c = e.getValue();
-                    checkSurrounding(gather, e.getKey(), c.face, c.side, c.isLog);
-                    last = e.getKey();
+                    //System.out.printf("%s %d %d %d %s %d\n", lp.isLog, lb.getX(), lb.getY(), lb.getZ(), lp.face, lp.side);
+                    if (!checkSurrounding(gather, e.getKey(), c.face, c.side, c.isLog))
+                        return false;
                 }
-                if (gather.isEmpty() && !checkLeaves(last)) // if tip of the tree is not leaves
-                    return false;
                 queue.clear();
+                // swap queue and gather
                 queue = gather;
                 gather = queue == queue1 ? queue2 : queue1;
             }
@@ -156,36 +157,42 @@ public class Timber implements Listener {
             return true;
         }
 
-        private void checkSurrounding(Map<Block, LogQueueParams> queue, Block bl, BlockFace face, int side, boolean isLog) {
-            if (side > 5) return;
+        private boolean checkSurrounding(Map<Block, LogQueueParams> queue, Block bl, BlockFace face, int side, boolean isLog) {
+            if (side > 5)
+                return false;
 
             int newSide = side + 1;
-            Map<Block, BlockFace> toCheck = new LinkedHashMap<>();
+            boolean hasLog = false;
 
             // itself
-            if (isLog)
-                toCheck.put(bl, face);
             for (BlockFace f : adjacent) {
                 if (side != 0 && facePass(face, f)) continue;
 
                 Block b = bl.getRelative(f);
-                if (isLog(b) && addBlock(b)) {
-                    toCheck.put(b, f);
-                    queue.put(b, new LogQueueParams(f, newSide, true));
+                if (isLog(b)) {
+                    hasLog = true;
+                    if (addBlock(b)) {
+                        queue.put(b, new LogQueueParams(f, newSide, true));
+                    }
                 }
             }
 
             // Upwards
-            for (Map.Entry<Block, BlockFace> e : toCheck.entrySet()) {
-                Block up = e.getKey().getRelative(BlockFace.UP);
+            if (isLog) {
+                Block up = bl.getRelative(BlockFace.UP);
 
                 if (isLog(up)) {
-                    if (addBlock(up))
-                        queue.put(up, new LogQueueParams(e.getValue(), side, true));
-                    continue;
+                    if (addBlock(up)) {
+                        queue.put(up, new LogQueueParams(face, side, true));
+                    }
+                    return true;
                 }
 
                 queue.put(up, new LogQueueParams(BlockFace.SELF, side, false));
+                return true;
+            } else {
+                // this is leaves or any other block.  Empty queue means no log were put in list.
+                return hasLog || checkLeaves(bl);
             }
         }
 
