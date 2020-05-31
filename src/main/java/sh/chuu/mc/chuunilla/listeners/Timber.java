@@ -40,6 +40,7 @@ public class Timber implements Listener {
     private final TextComponent actionBarTextEnd = new TextComponent("Timber finished");
 
     private final Chuunilla plugin = Chuunilla.getInstance();
+    private final Random random = new Random();
     private final Set<Player> timbering = new HashSet<>();
 
     @EventHandler
@@ -67,10 +68,12 @@ public class Timber implements Listener {
             Iterator<Block> it = c.logs.iterator();
             it.next(); // skip first block
 
+            int unb = axe.getEnchantmentLevel(Enchantment.DURABILITY) + 1;
+
             if (interval == 0) {
                 while (it.hasNext()) {
                     Block b = it.next();
-                    if (breakLogFailed(p, b, axe))
+                    if (breakLogFailed(p, b, axe, unb))
                         break;
                 }
                 timbering.remove(p);
@@ -83,7 +86,7 @@ public class Timber implements Listener {
                         return;
                     }
                     Block b = it.next();
-                    if (breakLogFailed(p, b, axe))
+                    if (breakLogFailed(p, b, axe, unb))
                         this.cancel();
                 }
 
@@ -97,7 +100,7 @@ public class Timber implements Listener {
         }
     }
 
-    private boolean breakLogFailed(Player p, Block b, ItemStack axe) {
+    private boolean breakLogFailed(Player p, Block b, ItemStack axe, int unb) {
         BlockBreakEvent nev = new BlockBreakEvent(b, p);
         Bukkit.getPluginManager().callEvent(nev);
         if (nev.isCancelled()) {
@@ -105,11 +108,13 @@ public class Timber implements Listener {
         }
 
         Damageable d = ((Damageable) axe.getItemMeta());
-        //noinspection ConstantConditions Axes are damageable.
-        int durability = d.getDamage() + 1;
-        if (durability >= axe.getType().getMaxDurability())
-            return true;
-        d.setDamage(durability);
+        if (unb == 1 || random.nextInt(unb) == 0) {
+            //noinspection ConstantConditions Axes are damageable.
+            int durability = d.getDamage() + 1;
+            if (durability >= axe.getType().getMaxDurability())
+                return true;
+            d.setDamage(durability);
+        }
 
         b.breakNaturally(axe);
         axe.setItemMeta((ItemMeta) d);
