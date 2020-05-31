@@ -50,7 +50,7 @@ public class Timber implements Listener {
         p.sendMessage("Timber Activated");
         TreeCheck c = new TreeCheck(b);
 
-        if (c.checkSurrounding(b, BlockFace.SELF, 0, true)) {
+        if (c.prepareLogs()) {
             p.sendMessage("Timber Passed");
             c.unstrip();
             Iterator<Block> it = c.logs.iterator();
@@ -117,6 +117,8 @@ public class Timber implements Listener {
         private final Block initial;
         private final Material leaves;
         private final Material log;
+        private final Map<Block, LogQueueParams> queue1 = new LinkedHashMap<>();
+        private final Map<Block, LogQueueParams> queue2 = new LinkedHashMap<>();
 
         private TreeCheck(Block initialBlock) {
             Material[] type = getLogLeaves(initialBlock.getType());
@@ -132,7 +134,25 @@ public class Timber implements Listener {
             }
         }
 
-        private boolean checkSurrounding(Block bl, BlockFace face, int side, boolean isLog) {
+        private boolean prepareLogs() {
+            Map<Block, LogQueueParams> queue = queue1;
+            Map<Block, LogQueueParams> gather = queue2;
+
+            queue.put(initial, new LogQueueParams(BlockFace.SELF, 0, true));
+            while (!queue.isEmpty()) {
+                for (Map.Entry<Block, LogQueueParams> e : queue.entrySet()) {
+                    LogQueueParams c = e.getValue();
+                    checkSurrounding(gather, e.getKey(), c.face, c.side, c.isLog);
+                }
+                queue.clear();
+                queue = gather;
+                gather = queue == queue1 ? queue2 : queue1;
+            }
+
+            return true;
+        }
+
+        private boolean checkSurrounding(Map<Block, LogQueueParams> queue, Block bl, BlockFace face, int side, boolean isLog) {
             if (side > 5) return false;
             int newSide = side + 1;
             Map<Block, BlockFace> toCheck = new LinkedHashMap<>();
@@ -146,26 +166,25 @@ public class Timber implements Listener {
                 Block b = bl.getRelative(f);
                 if (isLog(b) && addBlock(b)) {
                     toCheck.put(b, f);
-                    checkSurrounding(b, f, newSide, true);
+                    queue.put(b, new LogQueueParams(f, newSide, true));
                 }
             }
 
             // Upwards
             for (Map.Entry<Block, BlockFace> e : toCheck.entrySet()) {
                 Block up = e.getKey().getRelative(BlockFace.UP);
-                System.out.printf("y: %d\n", up.getY());
+                //System.out.printf("y: %d\n", up.getY());
 
                 if (isLog(up)) {
-                    if (addBlock(up) && !checkSurrounding(up, e.getValue(), side, true))
-                        return false;
+                    if (addBlock(up))
+                        queue.put(up, new LogQueueParams(e.getValue(), side, true));
                     continue;
                 }
 
-                if (checkSurrounding(up, BlockFace.SELF, side, false))
-                    return true;
+                queue.put(up, new LogQueueParams(BlockFace.SELF, side, false));
 
-                if (!checkLeaves(up))
-                    return false;
+//                if (!checkLeaves(up))
+//                    return false;
             }
             return true;
         }
@@ -216,6 +235,17 @@ public class Timber implements Listener {
             }
             return null;
         }
+    }
 
+    private class LogQueueParams {
+        private final BlockFace face;
+        private final int side;
+        private final boolean isLog;
+
+        private LogQueueParams(BlockFace face, int side, boolean isLog) {
+            this.face = face;
+            this.side = side;
+            this.isLog = isLog;
+        }
     }
 }
