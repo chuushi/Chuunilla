@@ -62,41 +62,48 @@ public class Timber implements Listener {
 
         TreeCheck c = new TreeCheck(bl);
         if (c.prepareLogs()) {
-            timbering.add(p);
-            p.spigot().sendMessage(ChatMessageType.ACTION_BAR, actionBarTextStart);
             c.unstrip();
             Iterator<Block> it = c.logs.iterator();
             it.next(); // skip first block
 
             int unb = axe.getEnchantmentLevel(Enchantment.DURABILITY) + 1;
 
+            timbering.add(p);
             if (interval == 0) {
-                while (it.hasNext()) {
-                    Block b = it.next();
-                    if (breakLogFailed(p, b, axe, unb))
-                        break;
-                }
-                timbering.remove(p);
-                p.spigot().sendMessage(ChatMessageType.ACTION_BAR, actionBarTextEnd);
-            } else new BukkitRunnable() {
-                @Override
-                public void run() {
-                    if (!it.hasNext()) {
-                        this.cancel();
-                        return;
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        while (it.hasNext()) {
+                            Block b = it.next();
+                            if (breakLogFailed(p, b, axe, unb))
+                                break;
+                        }
+                        timbering.remove(p);
+                        p.spigot().sendMessage(ChatMessageType.ACTION_BAR, actionBarTextEnd);
                     }
-                    Block b = it.next();
-                    if (breakLogFailed(p, b, axe, unb))
-                        this.cancel();
-                }
+                }.runTaskLater(plugin, 1L);
+            } else {
+                p.spigot().sendMessage(ChatMessageType.ACTION_BAR, actionBarTextStart);
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        if (!it.hasNext()) {
+                            this.cancel();
+                            return;
+                        }
+                        Block b = it.next();
+                        if (breakLogFailed(p, b, axe, unb))
+                            this.cancel();
+                    }
 
-                @Override
-                public synchronized void cancel() throws IllegalStateException {
-                    super.cancel();
-                    timbering.remove(p);
-                    p.spigot().sendMessage(ChatMessageType.ACTION_BAR, actionBarTextEnd);
-                }
-            }.runTaskTimer(plugin, interval, interval);
+                    @Override
+                    public synchronized void cancel() throws IllegalStateException {
+                        super.cancel();
+                        timbering.remove(p);
+                        p.spigot().sendMessage(ChatMessageType.ACTION_BAR, actionBarTextEnd);
+                    }
+                }.runTaskTimer(plugin, interval, interval);
+            }
         }
     }
 
@@ -113,6 +120,7 @@ public class Timber implements Listener {
             int durability = d.getDamage() + 1;
             if (durability >= axe.getType().getMaxDurability())
                 return true;
+            System.out.printf("Durability: %d\n", durability);
             d.setDamage(durability);
         }
 
@@ -162,16 +170,8 @@ public class Timber implements Listener {
 
         if (m >= 35)
             return 0;
-        if (m >= 25)
-            return 1;
-        if (m >= 20)
-            return 2;
-        if (m >= 15)
-            return 3;
-        if (m >= 10)
-            return 4;
         if (m >= 4)
-            return 14 - m;
+            return 60 / m;
         else
             return -1;
     }
