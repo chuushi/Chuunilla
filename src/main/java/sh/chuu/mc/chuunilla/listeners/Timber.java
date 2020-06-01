@@ -136,7 +136,6 @@ public class Timber implements Listener {
         }
 
         World w = b.getWorld();
-        w.playSound(b.getLocation(), Sound.BLOCK_WOOD_BREAK, SoundCategory.BLOCKS, 1.0f, 0.8f);
         w.playEffect(b.getLocation(), Effect.STEP_SOUND, b.getType());
 
         b.breakNaturally(axe);
