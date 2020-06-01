@@ -108,6 +108,9 @@ public class Timber implements Listener {
     }
 
     private boolean breakLogFailed(Player p, Block b, ItemStack axe, int unb) {
+        if (!p.getInventory().getItemInMainHand().isSimilar(axe)) // if item is out of hand (lol)
+            return true;
+
         BlockBreakEvent nev = new BlockBreakEvent(b, p);
         Bukkit.getPluginManager().callEvent(nev);
         if (nev.isCancelled()) {
@@ -120,7 +123,6 @@ public class Timber implements Listener {
             int durability = d.getDamage() + 1;
             if (durability >= axe.getType().getMaxDurability())
                 return true;
-            System.out.printf("Durability: %d\n", durability);
             d.setDamage(durability);
         }
 
@@ -129,8 +131,9 @@ public class Timber implements Listener {
 
         World w = b.getWorld();
         w.playSound(b.getLocation(), Sound.BLOCK_WOOD_BREAK, SoundCategory.BLOCKS, 1.0f, 0.8f);
-        // TODO figure out particles
-        //w.spawnParticle(Particle.BLOCK_DUST, b.getLocation(), 10, b.getBlockData());
+        // TODO figure out particles; they don't wanna work
+        //w.playEffect(p.getLocation(), Effect.STEP_SOUND, b.getType());
+        //w.spawnParticle(Particle.BLOCK_CRACK, b.getLocation().add(0.5, 0.5, 0.5), 20, b.getBlockData());
         return false;
     }
 
