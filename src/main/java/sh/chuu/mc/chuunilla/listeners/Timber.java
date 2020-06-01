@@ -75,6 +75,8 @@ public class Timber implements Listener {
                     public void run() {
                         while (it.hasNext()) {
                             Block b = it.next();
+                            if (b.getType() != c.log)
+                                continue;
                             if (breakLogFailed(p, b, axe, unb))
                                 break;
                         }
@@ -92,6 +94,13 @@ public class Timber implements Listener {
                             return;
                         }
                         Block b = it.next();
+                        while (b.getType() != c.log) {
+                            if (!it.hasNext()) {
+                                this.cancel();
+                                return;
+                            }
+                            b = it.next();
+                        }
                         if (breakLogFailed(p, b, axe, unb))
                             this.cancel();
                     }
@@ -126,14 +135,12 @@ public class Timber implements Listener {
             d.setDamage(durability);
         }
 
-        b.breakNaturally(axe);
-        axe.setItemMeta((ItemMeta) d);
-
         World w = b.getWorld();
         w.playSound(b.getLocation(), Sound.BLOCK_WOOD_BREAK, SoundCategory.BLOCKS, 1.0f, 0.8f);
-        // TODO figure out particles; they don't wanna work
-        //w.playEffect(p.getLocation(), Effect.STEP_SOUND, b.getType());
-        //w.spawnParticle(Particle.BLOCK_CRACK, b.getLocation().add(0.5, 0.5, 0.5), 20, b.getBlockData());
+        w.playEffect(b.getLocation(), Effect.STEP_SOUND, b.getType());
+
+        b.breakNaturally(axe);
+        axe.setItemMeta((ItemMeta) d);
         return false;
     }
 
