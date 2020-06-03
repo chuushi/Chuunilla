@@ -135,8 +135,7 @@ public class Timber implements Listener {
             d.setDamage(durability);
         }
 
-        World w = b.getWorld();
-        w.playEffect(b.getLocation(), Effect.STEP_SOUND, b.getType());
+        b.getWorld().playEffect(b.getLocation(), Effect.STEP_SOUND, b.getType());
 
         b.breakNaturally(axe);
         axe.setItemMeta((ItemMeta) d);
