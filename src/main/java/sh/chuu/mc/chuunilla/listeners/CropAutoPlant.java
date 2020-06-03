@@ -1,14 +1,21 @@
 package sh.chuu.mc.chuunilla.listeners;
 
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.Sound;
+import org.bukkit.SoundCategory;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.data.Ageable;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import sh.chuu.mc.chuunilla.Chuunilla;
@@ -63,11 +70,11 @@ public class CropAutoPlant implements Listener {
                 if (b.getType() != Material.AIR)
                     return;
 
-                Material landType = b.getRelative(BlockFace.DOWN).getType();
+                Block land = b.getRelative(BlockFace.DOWN);
                 if (crop == Material.NETHER_WART) {
-                    if (landType != Material.SOUL_SAND)
+                    if (land.getType() != Material.SOUL_SAND)
                         return;
-                } else if (landType != Material.FARMLAND) {
+                } else if (land.getType() != Material.FARMLAND) {
                     return;
                 }
 
@@ -83,10 +90,21 @@ public class CropAutoPlant implements Listener {
                     }
                 }
 
-                //noinspection ConstantConditions if slot exists, item exists
+                BlockState oldState = b.getState();
+                b.setType(crop);
+
+                //noinspection ConstantConditions for "item" - if slot exists, item exists
+                BlockPlaceEvent nev = new BlockPlaceEvent(b, oldState, land, item, p, true, EquipmentSlot.HAND);
+                Bukkit.getPluginManager().callEvent(nev);
+                if (nev.isCancelled()) {
+                    b.setBlockData(oldState.getBlockData(), false);
+                    return;
+                }
+
+                p.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent("Crop auto-planted"));
                 item.setAmount(item.getAmount() - 1);
                 inv.setItem(slot, item);
-                b.setType(crop);
+                b.getWorld().playSound(b.getLocation(), Sound.ITEM_CROP_PLANT, SoundCategory.BLOCKS, 1.0f, 0.75f);
             }, 5);
         }
     }
