@@ -197,6 +197,8 @@ public class Timber implements Listener {
             case STRIPPED_JUNGLE_LOG:
             case STRIPPED_DARK_OAK_LOG:
             case STRIPPED_ACACIA_LOG:
+            case STRIPPED_WARPED_STEM:
+            case STRIPPED_CRIMSON_STEM:
                 return true;
             default:
                 return false;
@@ -300,7 +302,7 @@ public class Timber implements Listener {
         }
 
         private boolean checkLeaves(Block leaves) {
-            return leaves.getType() == this.leaves && !((Leaves) leaves.getBlockData()).isPersistent();
+            return leaves.getType() == this.leaves && !(leaves instanceof Leaves && ((Leaves) leaves.getBlockData()).isPersistent());
         }
 
         private Material[] getLogLeaves(Material m) {
@@ -329,6 +331,14 @@ public class Timber implements Listener {
                 case STRIPPED_ACACIA_LOG:
                 case ACACIA_LEAVES:
                     return new Material[]{Material.ACACIA_LOG, Material.ACACIA_LEAVES};
+                case WARPED_STEM:
+                case STRIPPED_WARPED_STEM:
+                case WARPED_WART_BLOCK:
+                    return new Material[]{Material.WARPED_STEM, Material.WARPED_WART_BLOCK};
+                case CRIMSON_STEM:
+                case STRIPPED_CRIMSON_STEM:
+                case NETHER_WART_BLOCK:
+                    return new Material[]{Material.CRIMSON_STEM, Material.NETHER_WART_BLOCK};
             }
             return null;
         }
