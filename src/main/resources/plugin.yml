@@ -23,3 +23,5 @@ permissions:
     default: false
   chuunilla.autocrop:
     default: false
+  chuunilla.openshulker:
+    default: op
