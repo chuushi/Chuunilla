@@ -102,7 +102,7 @@ public class OpenShulker implements Listener {
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             shulkerOpened.put(p, new InventoryShulkerData(p, item, tempinv, slot));
             p.openInventory(tempinv);
-            ((Player) p).playSound(p.getLocation(), Sound.BLOCK_SHULKER_BOX_OPEN, SoundCategory.BLOCKS, 0.7f, 1f);
+            p.getWorld().playSound(p.getLocation(), Sound.BLOCK_SHULKER_BOX_OPEN, SoundCategory.BLOCKS, 0.5f, 1f);
         }, 1L);
         return true;
     }
@@ -114,7 +114,7 @@ public class OpenShulker implements Listener {
         blockState.setBlockState(shulker);
         isd.item.setItemMeta(blockState);
         isd.player.closeInventory();
-        ((Player) isd.player).playSound(isd.player.getLocation(), Sound.BLOCK_SHULKER_BOX_CLOSE, SoundCategory.BLOCKS, 0.7f, 1f);
+        isd.player.getWorld().playSound(isd.player.getLocation(), Sound.BLOCK_SHULKER_BOX_CLOSE, SoundCategory.BLOCKS, 0.5f, 1f);
     }
 
     public void onDisable() {
