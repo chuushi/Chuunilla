@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryType;
@@ -38,8 +39,6 @@ public class OpenShulker implements Listener {
 
         int slot;
         if (ev.getHand() == EquipmentSlot.OFF_HAND) {
-            // TODO Restricting offhand slot (by pressing [f]) doesn't work properly; just return if offhand for now
-            if (true) return;
             if (isShulkerBox(p.getInventory().getItemInMainHand()))
                 return;
             slot = 40;
@@ -59,14 +58,11 @@ public class OpenShulker implements Listener {
             return;
 
         InventoryShulkerData isd = shulkerOpened.get(p);
-        if (isd != null && (isd.slot == ev.getSlot() || isd.slot == ev.getHotbarButton())) {
-
+        if (isd != null && (isd.slot == ev.getSlot() || isd.slot == ev.getHotbarButton() || isd.slot == 40 && ev.getClick() == ClickType.SWAP_OFFHAND)) {
             ev.setCancelled(true);
             return;
         }
 
-        // TODO Restricting offhand slot (by pressing [f]) doesn't work properly; just return if offhand for now
-        if (ev.getSlot() == 40) return;
         if (ev.isRightClick() && openShulkerBox(p, ev.getCurrentItem(), ev.getSlot()))
             ev.setCancelled(true);
     }
