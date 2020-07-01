@@ -38,6 +38,8 @@ public class OpenShulker implements Listener {
 
         int slot;
         if (ev.getHand() == EquipmentSlot.OFF_HAND) {
+            // TODO Restricting offhand slot (by pressing [f]) doesn't work properly; just return if offhand for now
+            if (true) return;
             if (isShulkerBox(p.getInventory().getItemInMainHand()))
                 return;
             slot = 40;
@@ -63,9 +65,9 @@ public class OpenShulker implements Listener {
             return;
         }
 
-        if (!ev.isRightClick())
-            return;
-        if (openShulkerBox(p, ev.getCurrentItem(), ev.getSlot()))
+        // TODO Restricting offhand slot (by pressing [f]) doesn't work properly; just return if offhand for now
+        if (ev.getSlot() == 40) return;
+        if (ev.isRightClick() && openShulkerBox(p, ev.getCurrentItem(), ev.getSlot()))
             ev.setCancelled(true);
     }
 
