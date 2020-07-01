@@ -33,7 +33,7 @@ public class OpenShulker implements Listener {
     @EventHandler
     public void placeShulkerInAir(PlayerInteractEvent ev) {
         Player p = ev.getPlayer();
-        if (!p.hasPermission(PERMISSION_NODE) || !ev.hasItem() || ev.getAction() != Action.RIGHT_CLICK_AIR)
+        if (!p.hasPermission(PERMISSION_NODE) || p.isSneaking() || !ev.hasItem() || ev.getAction() != Action.RIGHT_CLICK_AIR)
             return;
 
         int slot;
@@ -57,7 +57,8 @@ public class OpenShulker implements Listener {
             return;
 
         InventoryShulkerData isd = shulkerOpened.get(p);
-        if (isd != null && isd.slot == ev.getSlot()) {
+        if (isd != null && (isd.slot == ev.getSlot() || isd.slot == ev.getHotbarButton())) {
+
             ev.setCancelled(true);
             return;
         }
