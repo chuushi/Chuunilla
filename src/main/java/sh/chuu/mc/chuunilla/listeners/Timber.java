@@ -164,6 +164,8 @@ public class Timber implements Listener {
                 return 12;
             case DIAMOND_AXE:
                 return 8;
+            case NETHERITE_AXE:
+                return 10;
             default:
                 return -1;
         }
