@@ -5,8 +5,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
 import sh.chuu.mc.chuunilla.listeners.*;
 
-import java.util.List;
-
 public class Chuunilla extends JavaPlugin {
     private static Chuunilla instance = null;
     private OpenShulker openShulker = null;
@@ -38,6 +36,9 @@ public class Chuunilla extends JavaPlugin {
 
         if (getConfig().getBoolean("timber-tree", false))
             getServer().getPluginManager().registerEvents(new Timber(), this);
+
+        if (getConfig().getBoolean("pet-owner", false))
+            getServer().getPluginManager().registerEvents(new PetOwner(), this);
 
         if (getConfig().getBoolean("open-shulker-as-item", false)) {
             this.openShulker = new OpenShulker();

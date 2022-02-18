@@ -5,3 +5,4 @@ beacon-mob-grief-protection: true
 wandering-trader-rare-trade: true
 timber-tree: true
 open-shulker-as-item: true
+pet-owner: true
