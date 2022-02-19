@@ -29,7 +29,7 @@ import java.util.LinkedHashMap;
 public class OpenShulker implements Listener {
     private static final String PERMISSION_NODE = "chuunilla.openshulker";
     private final Chuunilla plugin = Chuunilla.getInstance();
-    private HashMap<HumanEntity, InventoryShulkerData> shulkerOpened = new LinkedHashMap<>();
+    private final HashMap<HumanEntity, InventoryShulkerData> shulkerOpened = new LinkedHashMap<>();
 
     @EventHandler
     public void placeShulkerInAir(PlayerInteractEvent ev) {
@@ -86,8 +86,7 @@ public class OpenShulker implements Listener {
         ItemMeta itemMeta = item.getItemMeta();
         if (!(itemMeta instanceof BlockStateMeta)) return false;
         BlockState blockState = ((BlockStateMeta) itemMeta).getBlockState();
-        if (!(blockState instanceof ShulkerBox)) return false;
-        ShulkerBox shulker = (ShulkerBox) blockState;
+        if (!(blockState instanceof ShulkerBox shulker)) return false;
 
         Inventory tempinv;
         if (itemMeta.hasDisplayName())
@@ -108,6 +107,7 @@ public class OpenShulker implements Listener {
 
     private void closeShulker(InventoryShulkerData isd) {
         BlockStateMeta blockState = (BlockStateMeta) isd.item.getItemMeta();
+        @SuppressWarnings("ConstantConditions")
         ShulkerBox shulker = (ShulkerBox) blockState.getBlockState();
         shulker.getInventory().setContents(isd.tempInv.getContents());
         blockState.setBlockState(shulker);
@@ -121,17 +121,6 @@ public class OpenShulker implements Listener {
         shulkerOpened.clear();
     }
 
-    private class InventoryShulkerData {
-        private final HumanEntity player;
-        private final ItemStack item;
-        private final Inventory tempInv;
-        private final int slot;
-
-        private InventoryShulkerData(HumanEntity player, ItemStack item, Inventory tempInv, int slot) {
-            this.player = player;
-            this.item = item;
-            this.tempInv = tempInv;
-            this.slot = slot;
-        }
+    private record InventoryShulkerData(HumanEntity player, ItemStack item, Inventory tempInv, int slot) {
     }
 }

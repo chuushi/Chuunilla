@@ -97,8 +97,7 @@ public class AreaSearch {
         for (Chunk c : chunks) {
             if (!c.isLoaded()) continue;
             for (BlockState state : c.getTileEntities()) {
-                if (state instanceof Beacon) {
-                    Beacon b = (Beacon) state;
+                if (state instanceof Beacon b) {
                     int tier = b.getTier();
                     if (tier == 0) continue;
                     int maxd = 10 + tier * 10;

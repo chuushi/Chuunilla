@@ -2,7 +2,10 @@ package sh.chuu.mc.chuunilla.listeners;
 
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.*;
+import org.bukkit.Axis;
+import org.bukkit.Bukkit;
+import org.bukkit.Effect;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
@@ -15,7 +18,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -138,7 +140,7 @@ public class Timber implements Listener {
         b.getWorld().playEffect(b.getLocation(), Effect.STEP_SOUND, b.getType());
 
         b.breakNaturally(axe);
-        axe.setItemMeta((ItemMeta) d);
+        axe.setItemMeta(d);
         return false;
     }
 
@@ -153,22 +155,15 @@ public class Timber implements Listener {
     }
 
     private int axeMultiplier(Material axe) {
-        switch (axe) {
-            case WOODEN_AXE:
-                return 2;
-            case STONE_AXE:
-                return 4;
-            case IRON_AXE:
-                return 6;
-            case GOLDEN_AXE:
-                return 12;
-            case DIAMOND_AXE:
-                return 8;
-            case NETHERITE_AXE:
-                return 10;
-            default:
-                return -1;
-        }
+        return switch (axe) {
+            case WOODEN_AXE -> 2;
+            case STONE_AXE -> 4;
+            case IRON_AXE -> 6;
+            case GOLDEN_AXE -> 12;
+            case DIAMOND_AXE -> 8;
+            case NETHERITE_AXE -> 10;
+            default -> -1;
+        };
     }
 
     private int multiplierToTicks(int base, int eff, int haste) {
@@ -192,19 +187,10 @@ public class Timber implements Listener {
         if (!(data instanceof Orientable) || ((Orientable) data).getAxis() != Axis.Y)
             return false;
 
-        switch (b.getType()) {
-            case STRIPPED_OAK_LOG:
-            case STRIPPED_SPRUCE_LOG:
-            case STRIPPED_BIRCH_LOG:
-            case STRIPPED_JUNGLE_LOG:
-            case STRIPPED_DARK_OAK_LOG:
-            case STRIPPED_ACACIA_LOG:
-            case STRIPPED_WARPED_STEM:
-            case STRIPPED_CRIMSON_STEM:
-                return true;
-            default:
-                return false;
-        }
+        return switch (b.getType()) {
+            case STRIPPED_OAK_LOG, STRIPPED_SPRUCE_LOG, STRIPPED_BIRCH_LOG, STRIPPED_JUNGLE_LOG, STRIPPED_DARK_OAK_LOG, STRIPPED_ACACIA_LOG, STRIPPED_WARPED_STEM, STRIPPED_CRIMSON_STEM -> true;
+            default -> false;
+        };
     }
 
     private final class TreeCheck {
@@ -308,55 +294,20 @@ public class Timber implements Listener {
         }
 
         private Material[] getLogLeaves(Material m) {
-            switch (m) {
-                case OAK_LOG:
-                case STRIPPED_OAK_LOG:
-                case OAK_LEAVES:
-                    return new Material[]{Material.OAK_LOG, Material.OAK_LEAVES};
-                case SPRUCE_LOG:
-                case STRIPPED_SPRUCE_LOG:
-                case SPRUCE_LEAVES:
-                    return new Material[]{Material.SPRUCE_LOG, Material.SPRUCE_LEAVES};
-                case BIRCH_LOG:
-                case BIRCH_LEAVES:
-                case STRIPPED_BIRCH_LOG:
-                    return new Material[]{Material.BIRCH_LOG, Material.BIRCH_LEAVES};
-                case JUNGLE_LOG:
-                case STRIPPED_JUNGLE_LOG:
-                case JUNGLE_LEAVES:
-                    return new Material[]{Material.JUNGLE_LOG, Material.JUNGLE_LEAVES};
-                case DARK_OAK_LOG:
-                case STRIPPED_DARK_OAK_LOG:
-                case DARK_OAK_LEAVES:
-                    return new Material[]{Material.DARK_OAK_LOG, Material.DARK_OAK_LEAVES};
-                case ACACIA_LOG:
-                case STRIPPED_ACACIA_LOG:
-                case ACACIA_LEAVES:
-                    return new Material[]{Material.ACACIA_LOG, Material.ACACIA_LEAVES};
-                case WARPED_STEM:
-                case STRIPPED_WARPED_STEM:
-                case WARPED_WART_BLOCK:
-                    return new Material[]{Material.WARPED_STEM, Material.WARPED_WART_BLOCK};
-                case CRIMSON_STEM:
-                case STRIPPED_CRIMSON_STEM:
-                case NETHER_WART_BLOCK:
-                    return new Material[]{Material.CRIMSON_STEM, Material.NETHER_WART_BLOCK};
-            }
-            return null;
+            return switch (m) {
+                case OAK_LOG, STRIPPED_OAK_LOG, OAK_LEAVES -> new Material[]{Material.OAK_LOG, Material.OAK_LEAVES};
+                case SPRUCE_LOG, STRIPPED_SPRUCE_LOG, SPRUCE_LEAVES -> new Material[]{Material.SPRUCE_LOG, Material.SPRUCE_LEAVES};
+                case BIRCH_LOG, BIRCH_LEAVES, STRIPPED_BIRCH_LOG -> new Material[]{Material.BIRCH_LOG, Material.BIRCH_LEAVES};
+                case JUNGLE_LOG, STRIPPED_JUNGLE_LOG, JUNGLE_LEAVES -> new Material[]{Material.JUNGLE_LOG, Material.JUNGLE_LEAVES};
+                case DARK_OAK_LOG, STRIPPED_DARK_OAK_LOG, DARK_OAK_LEAVES -> new Material[]{Material.DARK_OAK_LOG, Material.DARK_OAK_LEAVES};
+                case ACACIA_LOG, STRIPPED_ACACIA_LOG, ACACIA_LEAVES -> new Material[]{Material.ACACIA_LOG, Material.ACACIA_LEAVES};
+                case WARPED_STEM, STRIPPED_WARPED_STEM, WARPED_WART_BLOCK -> new Material[]{Material.WARPED_STEM, Material.WARPED_WART_BLOCK};
+                case CRIMSON_STEM, STRIPPED_CRIMSON_STEM, NETHER_WART_BLOCK -> new Material[]{Material.CRIMSON_STEM, Material.NETHER_WART_BLOCK};
+                default -> null;
+            };
         }
     }
 
-    private class LogQueueParams {
-        private final BlockFace face;
-        private final int side;
-        private final boolean isLog;
-        private final boolean notEndOfBranch;
-
-        private LogQueueParams(BlockFace face, int side, boolean isLog, boolean notEndOfBranch) {
-            this.face = face;
-            this.side = side;
-            this.isLog = isLog;
-            this.notEndOfBranch = notEndOfBranch;
-        }
+    private record LogQueueParams(BlockFace face, int side, boolean isLog, boolean notEndOfBranch) {
     }
 }

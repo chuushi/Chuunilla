@@ -3,6 +3,7 @@ package sh.chuu.mc.chuunilla;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 import sh.chuu.mc.chuunilla.listeners.*;
 
 public class Chuunilla extends JavaPlugin {
@@ -58,7 +59,7 @@ public class Chuunilla extends JavaPlugin {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, @NotNull String[] args) {
         sender.sendMessage("Modules: disable-thunder-fire: " +
                 getConfig().getBoolean("disable-thunder-fire", false) + ", crop-auto-plant:" +
                 getConfig().getBoolean("crop-auto-plant", false) + ", beacon-mob-grief-protection:" +

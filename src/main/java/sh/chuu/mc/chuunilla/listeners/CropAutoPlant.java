@@ -32,32 +32,18 @@ public class CropAutoPlant implements Listener {
             return;
 
         Block b = ev.getBlock();
-        if (b.getBlockData() instanceof Ageable) {
-            Ageable age = (Ageable) b.getBlockData();
+        if (b.getBlockData() instanceof Ageable age) {
             Material crop = b.getType();
-            Material seed;
+            Material seed = switch (crop) {
+                case WHEAT -> Material.WHEAT_SEEDS;
+                case BEETROOTS -> Material.BEETROOT_SEEDS;
+                case CARROTS -> Material.CARROT;
+                case POTATOES -> Material.POTATO;
+                case NETHER_WART -> crop;
+                default -> null;
+            };
 
-            switch (crop) {
-                case WHEAT:
-                    seed = Material.WHEAT_SEEDS;
-                    break;
-                case BEETROOTS:
-                    seed = Material.BEETROOT_SEEDS;
-                    break;
-                case CARROTS:
-                    seed = Material.CARROT;
-                    break;
-                case POTATOES:
-                    seed = Material.POTATO;
-                    break;
-                case NETHER_WART:
-                    seed = crop;
-                    break;
-                default:
-                    return;
-            }
-
-            if (age.getAge() != age.getMaximumAge()) {
+            if (seed == null || age.getAge() != age.getMaximumAge()) {
                 return;
             }
 

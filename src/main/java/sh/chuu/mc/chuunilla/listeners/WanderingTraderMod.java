@@ -45,8 +45,10 @@ public class WanderingTraderMod implements Listener {
         if (ev.getEntityType() != EntityType.WANDERING_TRADER)
             return;
 
-        WanderingTrader trader = (WanderingTrader) ev.getEntity();
         int rng = new Random().nextInt(16);
+        if (rng > 12) return;
+
+        WanderingTrader trader = (WanderingTrader) ev.getEntity();
         List<MerchantRecipe> trades = new ArrayList<>(trader.getRecipes());
 
         if (rng == 0) trades.add(trident);
@@ -54,7 +56,7 @@ public class WanderingTraderMod implements Listener {
         else if (rng == 2) trades.add(elytra);
         else if (rng == 3) trades.add(beacon);
         else if (rng <= 6) trades.add(totem);
-        else if (rng <= 12) return;
+        else trades.add(bush); // if rng is over 12, don't add extra trades
 
         trader.setRecipes(trades);
     }
