@@ -6,3 +6,4 @@ wandering-trader-rare-trade: true
 timber-tree: true
 open-shulker-as-item: true
 pet-owner: true
+hotbar-reload: true

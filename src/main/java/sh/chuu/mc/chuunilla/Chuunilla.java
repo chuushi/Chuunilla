@@ -40,6 +40,9 @@ public class Chuunilla extends JavaPlugin {
         if (getConfig().getBoolean("pet-owner", false))
             getServer().getPluginManager().registerEvents(new PetOwner(), this);
 
+        if (getConfig().getBoolean("hotbar-reload", false))
+            getServer().getPluginManager().registerEvents(new HotbarReload(), this);
+
         if (getConfig().getBoolean("open-shulker-as-item", false)) {
             this.openShulker = new OpenShulker();
             getServer().getPluginManager().registerEvents(this.openShulker, this);
