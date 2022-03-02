@@ -88,16 +88,19 @@ public class OpenShulker implements Listener {
         BlockState blockState = ((BlockStateMeta) itemMeta).getBlockState();
         if (!(blockState instanceof ShulkerBox shulker)) return false;
 
-        Inventory tempinv;
-        if (itemMeta.hasDisplayName())
-            tempinv = Bukkit.createInventory(null, InventoryType.SHULKER_BOX, itemMeta.getDisplayName());
-        else
-            tempinv = Bukkit.createInventory(null, InventoryType.SHULKER_BOX);
-
-        tempinv.setContents(shulker.getInventory().getContents());
-
         p.closeInventory();
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            // Prevent if the shulker box inventory location changes right at this tick
+            if (!item.equals(p.getInventory().getItem(slot))) return;
+
+            Inventory tempinv;
+            if (itemMeta.hasDisplayName())
+                tempinv = Bukkit.createInventory(null, InventoryType.SHULKER_BOX, itemMeta.getDisplayName());
+            else
+                tempinv = Bukkit.createInventory(null, InventoryType.SHULKER_BOX);
+
+            tempinv.setContents(shulker.getInventory().getContents());
+
             shulkerOpened.put(p, new InventoryShulkerData(p, item, tempinv, slot));
             p.openInventory(tempinv);
             p.getWorld().playSound(p.getLocation(), Sound.BLOCK_SHULKER_BOX_OPEN, SoundCategory.BLOCKS, 0.5f, 1f);
